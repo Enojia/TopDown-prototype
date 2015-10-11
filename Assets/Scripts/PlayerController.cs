@@ -22,8 +22,9 @@ public class PlayerController : MonoBehaviour
         cam.transform.position = new Vector3(transform.position.x, transform.position.y, cam.transform.position.z);
     }
 
-	// Update is called once per frame
-	void FixedUpdate ()
+    // Update is called once per frame
+    void FixedUpdate()
+
     {
         Vector3 mousePosition = Camera.main.ScreenToWorldPoint(Input.mousePosition);
         Quaternion rot = Quaternion.LookRotation(transform.position - mousePosition, Vector3.forward);
@@ -32,9 +33,9 @@ public class PlayerController : MonoBehaviour
         rb2D.angularVelocity = 0;
 
         float inputVert = Input.GetAxisRaw("Vertical");
-        rb2D.AddForce(gameObject.transform.up * speed * inputVert);
-
         float inputHor = Input.GetAxisRaw("Horizontal");
-        rb2D.AddForce(gameObject.transform.right * strafeSpeed * inputHor);
-    }
+
+        rb2D.velocity = new Vector3(inputHor * speed, inputVert * speed);
+
+    }  
 }

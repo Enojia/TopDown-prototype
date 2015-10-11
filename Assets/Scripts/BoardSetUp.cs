@@ -19,6 +19,7 @@ public class BoardSetUp : MonoBehaviour
     public GameObject[] wallTiles;
     //public GameObject[] outerWallTiles;  implement later if necessary
     public GameObject player;       //prefab 
+    public GameObject Exit;
 
     private TileType[][] tiles;//jagged array of wall or floor
     private Room[] rooms; // all rooms for this boards
@@ -26,7 +27,7 @@ public class BoardSetUp : MonoBehaviour
     private GameObject boardHolder; //container for all tiles  
 
 	// Use this for initialization
-	void Start ()
+	public void SetUpScene()
     {
         boardHolder = new GameObject("BoardHolder");
 
@@ -39,7 +40,7 @@ public class BoardSetUp : MonoBehaviour
         setTileValueForCorridors(); //set floor type to all the tiles in corridors
 
         instantiateTiles();
-	}
+    }
 	
 	void SetupTilesArray() //init the tiles jagged array
     {
@@ -67,6 +68,7 @@ public class BoardSetUp : MonoBehaviour
         corridors[0].SetUpCorridor(rooms[0], corridorLength, roomWidth, roomHeight, columns, rows, true);
 
         int RandomRoomIndex = Random.Range(1, rooms.Length);
+        int RandomIndexExit = (RandomRoomIndex + 3) % rooms.Length;
 
         //setUp the other rooms and corridors
         for(int i = 1; i<rooms.Length; i ++)
@@ -88,6 +90,14 @@ public class BoardSetUp : MonoBehaviour
             {
                 Vector3 playerPos = new Vector3(rooms[i].xPos, rooms[i].yPos, 0);
                 Instantiate(player, playerPos, Quaternion.identity);
+            }
+
+            if(i == RandomIndexExit)
+            {
+                IntRange randomPosX = new IntRange(rooms[i].xPos, rooms[i].xPos + rooms[i].roomWidth - 1);
+                IntRange randomPosY = new IntRange(rooms[i].yPos, rooms[i].yPos + rooms[i].roomHeight - 1);
+                Vector3 ExitPos = new Vector3(randomPosX.Random, randomPosY.Random, 0);
+                Instantiate(Exit, ExitPos, Quaternion.identity);
             }
         }
     }
