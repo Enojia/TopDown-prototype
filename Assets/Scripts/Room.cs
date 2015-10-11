@@ -37,7 +37,7 @@ public class Room
                 break;
 
             case Direction.East:
-                roomWidth = Mathf.Clamp(roomWidth, 1, rows - corridor.EndPositionX);
+                roomWidth = Mathf.Clamp(roomWidth, 1, columns - corridor.EndPositionX);
                 xPos = corridor.EndPositionX;
                 yPos = Random.Range(corridor.EndPositionY - roomHeight + 1, corridor.EndPositionY);
                 yPos = Mathf.Clamp(yPos, 0, rows - roomHeight);
@@ -46,7 +46,7 @@ public class Room
             case Direction.South:
                 roomHeight = Mathf.Clamp(roomHeight, 1, corridor.EndPositionY); // come b here to understand otherwise it goes to far
                 yPos = corridor.EndPositionY - roomHeight + 1;
-                xPos = Random.Range(corridor.EndPositionX, corridor.EndPositionX - roomWidth + 1);
+                xPos = Random.Range(corridor.EndPositionX - roomWidth + 1, corridor.EndPositionX);
                 xPos = Mathf.Clamp(xPos, 0, columns - roomWidth);
                 break;
 
@@ -54,6 +54,7 @@ public class Room
                 roomWidth = Mathf.Clamp(roomWidth, 1, corridor.EndPositionX); // begin at origin 0 0 0
                 xPos = corridor.EndPositionX - roomWidth;
                 yPos = Random.Range(corridor.EndPositionY - roomHeight + 1, corridor.EndPositionY);
+                yPos = Mathf.Clamp(yPos, 0, rows - roomHeight);
                 break;
         }
     }

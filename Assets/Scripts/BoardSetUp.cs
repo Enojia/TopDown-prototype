@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using System.Collections;
+using System.Collections.Generic;
 
 public class BoardSetUp : MonoBehaviour
 {
@@ -14,20 +15,23 @@ public class BoardSetUp : MonoBehaviour
     public IntRange roomWidth = new IntRange(3, 10); // pseudoRandom width of a room
     public IntRange roomHeight = new IntRange(3, 10);
     public IntRange corridorLength = new IntRange(6, 10); // pseudoRandom length of a corridor
+    public IntRange numEnemies = new IntRange(1, 5);
 
     public GameObject[] floorTiles;  //prefabs array
     public GameObject[] wallTiles;
+    public GameObject[] ennemies;
     //public GameObject[] outerWallTiles;  implement later if necessary
     public GameObject player;       //prefab 
     public GameObject Exit;
+    public List<Vector3> possiblePos;
 
     private TileType[][] tiles;//jagged array of wall or floor
     private Room[] rooms; // all rooms for this boards
     private Corridor[] corridors; // all corridors for this boards
     private GameObject boardHolder; //container for all tiles  
 
-	// Use this for initialization
-	public void SetUpScene()
+    // Use this for initialization
+    public void SetUpScene()
     {
         boardHolder = new GameObject("BoardHolder");
 
@@ -40,13 +44,15 @@ public class BoardSetUp : MonoBehaviour
         setTileValueForCorridors(); //set floor type to all the tiles in corridors
 
         instantiateTiles();
+
+        instantiateEnemy(ennemies);
     }
-	
-	void SetupTilesArray() //init the tiles jagged array
+
+    void SetupTilesArray() //init the tiles jagged array
     {
         tiles = new TileType[columns][]; //set the tiles to the right width
 
-        for (int i = 0; i < tiles.Length; i ++)
+        for (int i = 0; i < tiles.Length; i++)
         {
             tiles[i] = new TileType[rows]; //set the array in the array
         }
@@ -71,51 +77,56 @@ public class BoardSetUp : MonoBehaviour
         int RandomIndexExit = (RandomRoomIndex + 3) % rooms.Length;
 
         //setUp the other rooms and corridors
-        for(int i = 1; i<rooms.Length; i ++)
+        for (int i = 1; i < rooms.Length; i++)
         {
             //create a room
             rooms[i] = new Room();
 
             //setUp the room based on the previous corridor
-            rooms[i].SetUpRoom(roomWidth, roomHeight, columns, rows, corridors[i-1]);
+            rooms[i].SetUpRoom(roomWidth, roomHeight, columns, rows, corridors[i - 1]);
 
-            if(i<corridors.Length)
+            if (i < corridors.Length)
             {
                 corridors[i] = new Corridor();
 
                 corridors[i].SetUpCorridor(rooms[i], corridorLength, roomWidth, roomHeight, columns, rows, false);
             }
 
-            if(i == RandomRoomIndex) //better computation with  *
+            if (i == RandomRoomIndex) //better computation with  *
             {
                 Vector3 playerPos = new Vector3(rooms[i].xPos, rooms[i].yPos, 0);
                 Instantiate(player, playerPos, Quaternion.identity);
             }
 
-            if(i == RandomIndexExit)
+            if (i == RandomIndexExit)
             {
                 IntRange randomPosX = new IntRange(rooms[i].xPos, rooms[i].xPos + rooms[i].roomWidth - 1);
                 IntRange randomPosY = new IntRange(rooms[i].yPos, rooms[i].yPos + rooms[i].roomHeight - 1);
                 Vector3 ExitPos = new Vector3(randomPosX.Random, randomPosY.Random, 0);
                 Instantiate(Exit, ExitPos, Quaternion.identity);
             }
+
+
+
         }
     }
 
     void SetTilesValuesForRoom()
     {
-        for(int i = 0; i<rooms.Length; i++)
+        for (int i = 0; i < rooms.Length; i++)
         {
             Room currentRoom = rooms[i];
 
-            for(int j = 0; j < currentRoom.roomWidth; j++)
+            for (int j = 0; j < currentRoom.roomWidth; j++)
             {
                 int xCoord = currentRoom.xPos + j;
-                for(int k = 0; k < currentRoom.roomHeight; k++)
+                for (int k = 0; k < currentRoom.roomHeight; k++)
                 {
                     int yCoord = currentRoom.yPos + k;
 
                     tiles[xCoord][yCoord] = TileType.Floor;
+
+                    possiblePos.Add(new Vector3(xCoord, yCoord, 0));
                 }
             }
         }
@@ -123,16 +134,16 @@ public class BoardSetUp : MonoBehaviour
 
     void setTileValueForCorridors()
     {
-        for(int i = 0; i<corridors.Length; i++)
+        for (int i = 0; i < corridors.Length; i++)
         {
             Corridor currentCorridor = corridors[i];
 
-            for(int j = 0; j<currentCorridor.corridorLength; j++)
+            for (int j = 0; j < currentCorridor.corridorLength; j++)
             {
                 int xCoord = currentCorridor.startXPos;
                 int yCoord = currentCorridor.startYPos;
 
-                switch(currentCorridor.direction) // one of the four certainly
+                switch (currentCorridor.direction) // one of the four certainly
                 {
                     case Direction.North:
                         yCoord += j;
@@ -158,13 +169,13 @@ public class BoardSetUp : MonoBehaviour
 
     void instantiateTiles() //in all the tiles jagged array
     {
-        for(int i = 0; i<tiles.Length; i++)
+        for (int i = 0; i < tiles.Length; i++)
         {
-            for(int j = 0; j<tiles.Length; j++)
+            for (int j = 0; j < tiles.Length; j++)
             {
                 instantiateFromArray(floorTiles, i, j);  //fill all with floor
 
-                if(tiles[i][j] == TileType.Wall)  //fill all walls with walls
+                if (tiles[i][j] == TileType.Wall)  //fill all walls with walls
                 {
                     instantiateFromArray(wallTiles, i, j);
                 }
@@ -177,7 +188,31 @@ public class BoardSetUp : MonoBehaviour
         int randomIndex = Random.Range(0, prefabs.Length);
 
         Vector3 position = new Vector3(xCoord, yCoord, 0);
-        GameObject tileInstance =(GameObject) Instantiate(prefabs[randomIndex], position, Quaternion.identity);
+        GameObject tileInstance = (GameObject)Instantiate(prefabs[randomIndex], position, Quaternion.identity);
         tileInstance.transform.SetParent(boardHolder.transform);
+    }
+
+    void instantiateEnemy(GameObject[] enemies)
+    {
+        int randomNum = numEnemies.Random; // number of enemies
+        for (int i = 0; i<randomNum; i ++)
+        {
+            int randomPosIndex = Random.Range(0, possiblePos.Count);
+            Vector3 currentVect = possiblePos[randomPosIndex];
+
+            if (player.transform.position == currentVect)
+            {
+                possiblePos.Remove(currentVect);
+            }
+
+            else
+            {
+                instantiateFromArray(enemies, currentVect.x, currentVect.y);
+                possiblePos.Remove(currentVect);
+                Debug.Log("been instantiated");
+            }
+        }
+
+
     }
 }
