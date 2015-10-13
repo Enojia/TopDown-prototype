@@ -10,6 +10,7 @@ public class PlayerController : MonoBehaviour
     public float fireRate = 4.0f;
     public float nextFire = 0.0f;
     public GameObject Bullet;
+    public AudioSource ShotSfx;
 
 
     public enum State
@@ -26,6 +27,7 @@ public class PlayerController : MonoBehaviour
         cam = GameObject.FindGameObjectWithTag("MainCamera").GetComponent<Camera>();
         anim = GetComponentInChildren<Animator>();
         
+        
 	}
 	void  Update()
     {
@@ -35,6 +37,7 @@ public class PlayerController : MonoBehaviour
             nextFire = Time.time + fireRate;
             GameObject bullet = Instantiate(Bullet, transform.position, transform.rotation) as GameObject;
             anim.SetTrigger("Shoot");
+            ShotSfx.Play();
         }
     }
 

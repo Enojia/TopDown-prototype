@@ -4,7 +4,7 @@ using System.Collections;
 public class Bullet : MonoBehaviour
 {
 
-    public float speed = 15;
+    public float speed = 40;
     public float lifeTime = 0.5f;
     public int power = 1;
 
